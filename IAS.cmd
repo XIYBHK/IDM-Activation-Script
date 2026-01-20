@@ -60,7 +60,7 @@ exit /b
 ::========================================================================================================================================
 
 set "blank="
-set "mas=https://github.com/lstprjct/IDM-Activation-Script/wiki/"
+set "mas=https://github.com/XIYBHK/IDM-Activation-Script#"
 
 ::  Check if Null service is working, it's important for the batch script
 
@@ -91,6 +91,9 @@ exit /b
 popd
 
 ::========================================================================================================================================
+
+:: Set UTF-8 code page for Chinese character display
+chcp 65001 >nul 2>&1
 
 cls
 color 07
@@ -359,36 +362,84 @@ if %_reset%==1 goto :_reset
 if %_activate%==1 (set frz=0&goto :_activate)
 if %_freeze%==1 (set frz=1&goto :_activate)
 
+::========================================================================================================================================
+:: Language Selection / 语言选择
+::========================================================================================================================================
+
+if not defined _lang (
+cls
+title  IDM Activation Script %iasver% - Language Selection
+if not defined terminal mode 60, 20
+echo:
+echo:
+echo:            ___________________________________________________
+echo:
+echo:               Select Language / 选择语言
+echo:            ___________________________________________________
+echo:
+echo:               [1] English
+echo:               [2] 中文
+echo:               _____________________________________________
+echo:
+choice /C:12 /N /M ">   Select [1,2]: "
+if !errorlevel!==2 (set _lang=1) else (set _lang=0)
+cls
+)
+
 :MainMenu
 
 cls
-title  IDM Activation Script %iasver%
+if %_lang%==1 (
+    title  IDM 激活脚本 %iasver%
+) else (
+    title  IDM Activation Script %iasver%
+)
 if not defined terminal mode 75, 28
 
 echo:
 echo:
-call :_color2 %_White% "             " %_Green% "Create By Astro-Saurav"
-echo:            ___________________________________________________ 
-echo:
-echo:               Github: https://github.com/Astro-Saurav
-echo:            ___________________________________________________ 
-echo:                                                               
-echo:               [1] Activate
-echo:               [2] Freeze Trial
-echo:               [3] Reset Activation / Trial
-echo:               _____________________________________________   
-echo:                                                               
-echo:               [4] Download IDM
-echo:               [5] Help
-echo:               [0] Exit
-echo:            ___________________________________________________
-echo:         
-call :_color2 %_White% "             " %_Green% "Enter a menu option in the Keyboard [1,2,3,4,5,0]"
+if %_lang%==1 (
+    call :_color2 %_White% "             " %_Green% "由 XIYBHK 维护"
+    echo _________________________________________________
+    echo:
+    echo    Github: https://github.com/XIYBHK
+    echo _________________________________________________
+    echo:
+    echo    [1] 激活
+    echo    [2] 冻结试用/推荐
+    echo    [3] 重置激活/试用
+    echo    ___________________________________________
+    echo:
+    echo    [4] 下载 IDM
+    echo    [5] 帮助
+    echo    [0] 退出
+    echo _________________________________________________
+    echo:
+    call :_color2 %_White% "             " %_Green% "请输入选项 [1,2,3,4,5,0]"
+) else (
+    call :_color2 %_White% "             " %_Green% "Maintained by XIYBHK"
+    echo _________________________________________________
+    echo:
+    echo    Github: https://github.com/XIYBHK
+    echo _________________________________________________
+    echo:
+    echo    [1] Activate
+    echo    [2] Freeze Trial/Recommended
+    echo    [3] Reset Activation/Trial
+    echo    ___________________________________________
+    echo:
+    echo    [4] Download IDM
+    echo    [5] Help
+    echo    [0] Exit
+    echo _________________________________________________
+    echo:
+    call :_color2 %_White% "             " %_Green% "Enter a menu option [1,2,3,4,5,0]"
+)
 choice /C:123450 /N
 set _erl=%errorlevel%
 
 if %_erl%==6 exit /b
-if %_erl%==5 start https://github.com/Astro-Saurav/IDM-Activation-Script & goto MainMenu
+if %_erl%==5 start https://github.com/XIYBHK/IDM-Activation-Script & goto MainMenu
 if %_erl%==4 start https://www.internetdownloadmanager.com/download.html & goto MainMenu
 if %_erl%==3 goto _reset
 if %_erl%==2 (set frz=1&goto :_activate)
@@ -414,27 +465,39 @@ set _time=
 for /f %%a in ('%psc% "(Get-Date).ToString('yyyyMMdd-HHmmssfff')"') do set _time=%%a
 
 echo:
-echo Creating backup of CLSID registry keys in %SystemRoot%\Temp
+if %_lang%==1 (
+    echo 在 %SystemRoot%\Temp 中创建 CLSID 注册表键的备份
+) else (
+    echo Creating backup of CLSID registry keys in %SystemRoot%\Temp
+)
 
 reg export %CLSID% "%SystemRoot%\Temp\_Backup_HKCU_CLSID_%_time%.reg"
 if not %HKCUsync%==1 reg export %CLSID2% "%SystemRoot%\Temp\_Backup_HKU-%_sid%_CLSID_%_time%.reg"
 
 call :delete_queue
-%psc% "$sid = '%_sid%'; $HKCUsync = %HKCUsync%; $lockKey = $null; $deleteKey = 1; $f=[io.file]::ReadAllText('!_batp!') -split ':regscan\:.*';iex ($f[1])"
+%psc% "$sid = '%_sid%'; $HKCUsync = %HKCUsync%; $lockKey = $null; $deleteKey = 1; $lang = %_lang%; $f=[io.file]::ReadAllText('!_batp!') -split ':regscan\:.*';iex ($f[1])"
 
 call :add_key
 
 echo:
 echo %line%
 echo:
-call :_color %Green% "The IDM reset process has been completed."
+if %_lang%==1 (
+    call :_color %Green% "IDM 重置过程已完成。"
+) else (
+    call :_color %Green% "The IDM reset process has been completed."
+)
 
 goto done
 
 :delete_queue
 
 echo:
-echo Deleting IDM registry keys...
+if %_lang%==1 (
+    echo 正在删除 IDM 注册表键...
+) else (
+    echo Deleting IDM registry keys...
+)
 echo:
 
 for %%# in (
@@ -476,10 +539,18 @@ reg delete %reg% /f %nul%
 
 if "%errorlevel%"=="0" (
 set "reg=%reg:"=%"
-echo Deleted - !reg!
+if %_lang%==1 (
+    echo 已删除 - !reg!
+) else (
+    echo Deleted - !reg!
+)
 ) else (
 set "reg=%reg:"=%"
-call :_color2 %Red% "Failed - !reg!"
+if %_lang%==1 (
+    call :_color2 %Red% "失败 - !reg!"
+) else (
+    call :_color2 %Red% "Failed - !reg!"
+)
 )
 
 exit /b
@@ -500,20 +571,35 @@ if %frz%==0 if %_unattended%==0 (
 echo:
 echo %line%
 echo:
-echo      Activation is not working for some users and IDM may show fake serial nag screen.
-echo:
-call :_color2 %_White% "     " %_Green% "Its recommended to use Freeze Trial option instead."
+if %_lang%==1 (
+    echo      激活功能对某些用户可能无效，IDM 可能会显示假序列号警告。
+    echo:
+    call :_color2 %_White% "     " %_Green% "建议使用【冻结试用】选项代替。"
+) else (
+    echo      Activation is not working for some users and IDM may show fake serial nag screen.
+    echo:
+    call :_color2 %_White% "     " %_Green% "Its recommended to use Freeze Trial option instead."
+)
 echo %line%
 echo:
-choice /C:19 /N /M ">    [1] Go Back [9] Activate : "
+if %_lang%==1 (
+    choice /C:19 /N /M ">    [1] 返回 [9] 继续激活 : "
+) else (
+    choice /C:19 /N /M ">    [1] Go Back [9] Activate : "
+)
 if !errorlevel!==1 goto :MainMenu
 cls
 )
 
 echo:
 if not exist "%IDMan%" (
-call :_color %Red% "IDM [Internet Download Manager] is not Installed."
-echo You can download it from  https://www.internetdownloadmanager.com/download.html
+if %_lang%==1 (
+    call :_color %Red% "未安装 IDM [Internet Download Manager]。"
+    echo 你可以从这里下载  https://www.internetdownloadmanager.com/download.html
+) else (
+    call :_color %Red% "IDM [Internet Download Manager] is not Installed."
+    echo You can download it from  https://www.internetdownloadmanager.com/download.html
+)
 goto done
 )
 
@@ -524,7 +610,11 @@ for /f "delims=[] tokens=2" %%# in ('ping -n 1 internetdownloadmanager.com') do 
 
 if not defined _int (
 %psc% "$t = New-Object Net.Sockets.TcpClient;try{$t.Connect("""internetdownloadmanager.com""", 80)}catch{};$t.Connected" | findstr /i "true" %nul1% || (
-call :_color %Red% "Unable to connect internetdownloadmanager.com, aborting..."
+if %_lang%==1 (
+    call :_color %Red% "无法连接到 internetdownloadmanager.com，正在中止..."
+) else (
+    call :_color %Red% "Unable to connect internetdownloadmanager.com, aborting..."
+)
 goto done
 )
 call :_color %Gray% "Ping command failed for internetdownloadmanager.com"
@@ -536,7 +626,11 @@ for /f "skip=2 tokens=2*" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Cont
 for /f "tokens=6-7 delims=[]. " %%i in ('ver') do if "%%j"=="" (set fullbuild=%%i) else (set fullbuild=%%i.%%j)
 for /f "tokens=2*" %%a in ('reg query "HKU\%_sid%\Software\DownloadManager" /v idmvers %nul6%') do set "IDMver=%%b"
 
-echo Checking Info - [%regwinos% ^| %fullbuild% ^| %regarch% ^| IDM: %IDMver%]
+if %_lang%==1 (
+    echo 检查信息 - [%regwinos% ^| %fullbuild% ^| %regarch% ^| IDM: %IDMver%]
+) else (
+    echo Checking Info - [%regwinos% ^| %fullbuild% ^| %regarch% ^| IDM: %IDMver%]
+)
 
 %idmcheck% && (echo: & taskkill /f /im idman.exe)
 
@@ -544,7 +638,11 @@ set _time=
 for /f %%a in ('%psc% "(Get-Date).ToString('yyyyMMdd-HHmmssfff')"') do set _time=%%a
 
 echo:
-echo Creating backup of CLSID registry keys in %SystemRoot%\Temp
+if %_lang%==1 (
+    echo 在 %SystemRoot%\Temp 中创建 CLSID 注册表键的备份
+) else (
+    echo Creating backup of CLSID registry keys in %SystemRoot%\Temp
+)
 
 reg export %CLSID% "%SystemRoot%\Temp\_Backup_HKCU_CLSID_%_time%.reg"
 if not %HKCUsync%==1 reg export %CLSID2% "%SystemRoot%\Temp\_Backup_HKU-%_sid%_CLSID_%_time%.reg"
@@ -552,32 +650,50 @@ if not %HKCUsync%==1 reg export %CLSID2% "%SystemRoot%\Temp\_Backup_HKU-%_sid%_C
 call :delete_queue
 call :add_key
 
-%psc% "$sid = '%_sid%'; $HKCUsync = %HKCUsync%; $lockKey = 1; $deleteKey = $null; $toggle = 1; $f=[io.file]::ReadAllText('!_batp!') -split ':regscan\:.*';iex ($f[1])"
+%psc% "$sid = '%_sid%'; $HKCUsync = %HKCUsync%; $lockKey = 1; $deleteKey = $null; $toggle = 1; $lang = %_lang%; $f=[io.file]::ReadAllText('!_batp!') -split ':regscan\:.*';iex ($f[1])"
 
 if %frz%==0 call :register_IDM
 
 call :download_files
 if not defined _fileexist (
 %eline%
-echo Error: Unable to download files with IDM.
-echo:
-echo Help: %mas%IAS-Help#troubleshoot
+if %_lang%==1 (
+    echo 错误：无法使用 IDM 下载文件。
+    echo:
+    echo 帮助: %mas%IAS-Help#troubleshoot
+) else (
+    echo Error: Unable to download files with IDM.
+    echo:
+    echo Help: %mas%IAS-Help#troubleshoot
+)
 goto :done
 )
 
-%psc% "$sid = '%_sid%'; $HKCUsync = %HKCUsync%; $lockKey = 1; $deleteKey = $null; $f=[io.file]::ReadAllText('!_batp!') -split ':regscan\:.*';iex ($f[1])"
+%psc% "$sid = '%_sid%'; $HKCUsync = %HKCUsync%; $lockKey = 1; $deleteKey = $null; $lang = %_lang%; $f=[io.file]::ReadAllText('!_batp!') -split ':regscan\:.*';iex ($f[1])"
 
 echo:
 echo %line%
 echo:
 if %frz%==0 (
-call :_color %Green% "The IDM Activation process has been completed."
-echo:
-call :_color %Gray% "If the fake serial screen appears, use the Freeze Trial option instead."
+if %_lang%==1 (
+    call :_color %Green% "IDM 激活过程已完成。"
+    echo:
+    call :_color %Gray% "如果出现假序列号提示，请使用【冻结试用】选项。"
 ) else (
-call :_color %Green% "The IDM 30 days trial period is successfully freezed for Lifetime."
-echo:
-call :_color %Gray% "If IDM is showing a popup to register, reinstall IDM."
+    call :_color %Green% "The IDM Activation process has been completed."
+    echo:
+    call :_color %Gray% "If the fake serial screen appears, use the Freeze Trial option instead."
+)
+) else (
+if %_lang%==1 (
+    call :_color %Green% "IDM 30 天试用期已成功永久冻结。"
+    echo:
+    call :_color %Gray% "如果 IDM 显示注册弹窗，请重新安装 IDM。"
+) else (
+    call :_color %Green% "The IDM 30 days trial period is successfully freezed for Lifetime."
+    echo:
+    call :_color %Gray% "If IDM is showing a popup to register, reinstall IDM."
+)
 )
 
 ::========================================================================================================================================
@@ -590,10 +706,18 @@ echo:
 if %_unattended%==1 timeout /t 2 & exit /b
 
 if defined terminal (
-call :_color %_Yellow% "Press 0 key to return..."
+if %_lang%==1 (
+    call :_color %_Yellow% "按 0 键返回..."
+) else (
+    call :_color %_Yellow% "Press 0 key to return..."
+)
 choice /c 0 /n
 ) else (
-call :_color %_Yellow% "Press any key to return..."
+if %_lang%==1 (
+    call :_color %_Yellow% "按任意键返回..."
+) else (
+    call :_color %_Yellow% "Press any key to return..."
+)
 pause %nul1%
 )
 goto MainMenu
@@ -603,10 +727,18 @@ goto MainMenu
 if %_unattended%==1 timeout /t 2 & exit /b
 
 if defined terminal (
-echo Press 0 key to exit...
+if %_lang%==1 (
+    echo 按 0 键退出...
+) else (
+    echo Press 0 key to exit...
+)
 choice /c 0 /n
 ) else (
-echo Press any key to exit...
+if %_lang%==1 (
+    echo 按任意键退出...
+) else (
+    echo Press any key to exit...
+)
 pause %nul1%
 )
 exit /b
@@ -622,7 +754,11 @@ exit /b
 :register_IDM
 
 echo:
-echo Applying registration details...
+if %_lang%==1 (
+    echo 正在应用注册信息...
+) else (
+    echo Applying registration details...
+)
 echo:
 
 set /a fname = %random% %% 9999 + 1000
@@ -647,7 +783,11 @@ exit /b
 :download_files
 
 echo:
-echo Triggering a few downloads to create certain registry keys, please wait...
+if %_lang%==1 (
+    echo 触发几次下载以创建某些注册表键，请稍候...
+) else (
+    echo Triggering a few downloads to create certain registry keys, please wait...
+)
 echo:
 
 set "file=%SystemRoot%\Temp\temp.png"
@@ -685,7 +825,11 @@ goto :Check_file
 :add_key
 
 echo:
-echo Adding registry key...
+if %_lang%==1 (
+    echo 正在添加注册表键...
+) else (
+    echo Adding registry key...
+)
 echo:
 
 set "reg="%HKLM%" /v "AdvIntDriverEnabled2""
@@ -696,10 +840,18 @@ reg add %reg% /t REG_DWORD /d "1" /f %nul%
 
 if "%errorlevel%"=="0" (
 set "reg=%reg:"=%"
-echo Added - !reg!
+if %_lang%==1 (
+    echo 已添加 - !reg!
+) else (
+    echo Added - !reg!
+)
 ) else (
 set "reg=%reg:"=%"
-call :_color2 %Red% "Failed - !reg!"
+if %_lang%==1 (
+    call :_color2 %Red% "失败 - !reg!"
+) else (
+    call :_color2 %Red% "Failed - !reg!"
+)
 )
 exit /b
 
@@ -715,27 +867,37 @@ if ($arch -eq "x86") {
   $regPaths = @("HKCU:\Software\Classes\WOW6432Node\CLSID", "Registry::HKEY_USERS\$sid\Software\Classes\Wow6432Node\CLSID")
 }
 
+$scanMsg = if ($lang -eq 1) { "正在搜索 IDM CLSID 注册表键" } else { "Searching IDM CLSID Registry Keys" }
+$lockedMsg = if ($lang -eq 1) { "发现已锁定的键" } else { "Found Locked Key" }
+$notFoundMsg = if ($lang -eq 1) { "未找到 IDM CLSID 注册表键。" } else { "IDM CLSID Registry Keys are not found." }
+$lockingMsg = if ($lang -eq 1) { "正在锁定 IDM CLSID 注册表键..." } else { "Locking IDM CLSID Registry Keys..." }
+$deletingMsg = if ($lang -eq 1) { "正在删除 IDM CLSID 注册表键..." } else { "Deleting IDM CLSID Registry Keys..." }
+$tooManyMsg = if ($lang -eq 1) { "IDM 键数量超过 20 个，正在删除而不是锁定..." } else { "The IDM keys count is more than 20. Deleting them now instead of locking..." }
+$lockedResult = if ($lang -eq 1) { "已锁定" } else { "Locked" }
+$deletedResult = if ($lang -eq 1) { "已删除" } else { "Deleted" }
+$failedResult = if ($lang -eq 1) { "失败" } else { "Failed" }
+
 foreach ($regPath in $regPaths) {
     if (($regPath -match "HKEY_USERS") -and ($HKCUsync -ne $null)) {
         continue
     }
-	
+
 	Write-Host
-	Write-Host "Searching IDM CLSID Registry Keys in $regPath"
+	Write-Host "$scanMsg in $regPath"
 	Write-Host
-	
+
     $subKeys = Get-ChildItem -Path $regPath -ErrorAction SilentlyContinue -ErrorVariable lockedKeys | Where-Object { $_.PSChildName -match '^\{[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}\}$' }
 
     foreach ($lockedKey in $lockedKeys) {
         $leafValue = Split-Path -Path $lockedKey.TargetObject -Leaf
         $finalValues += $leafValue
-        Write-Output "$leafValue - Found Locked Key"
+        Write-Output "$leafValue - $lockedMsg"
     }
 
     if ($subKeys -eq $null) {
 	continue
 	}
-	
+
 	$subKeysToExclude = "LocalServer32", "InProcServer32", "InProcHandler32"
 
     $filteredKeys = $subKeys | Where-Object { !($_.GetSubKeyNames() | Where-Object { $subKeysToExclude -contains $_ }) }
@@ -781,21 +943,21 @@ $finalValues = @($finalValues | Select-Object -Unique)
 if ($finalValues -ne $null) {
     Write-Host
     if ($lockKey -ne $null) {
-        Write-Host "Locking IDM CLSID Registry Keys..."
+        Write-Host $lockingMsg
     }
     if ($deleteKey -ne $null) {
-        Write-Host "Deleting IDM CLSID Registry Keys..."
+        Write-Host $deletingMsg
     }
     Write-Host
 } else {
-    Write-Host "IDM CLSID Registry Keys are not found."
+    Write-Host $notFoundMsg
 	Exit
 }
 
 if (($finalValues.Count -gt 20) -and ($toggle -ne $null)) {
 	$lockKey = $null
 	$deleteKey = 1
-    Write-Host "The IDM keys count is more than 20. Deleting them now instead of locking..."
+    Write-Host $tooManyMsg
 	Write-Host
 }
 
@@ -858,10 +1020,10 @@ foreach ($regPath in $regPaths) {
             Take-Permissions $rootKey $regKey
             try {
                 Remove-Item -Path $fullPath -Force -Recurse -ErrorAction Stop
-                Write-Host -back 'DarkRed' -fore 'white' "Failed - $fullPath"
+                Write-Host -back 'DarkRed' -fore 'white' "$failedResult - $fullPath"
             }
             catch {
-                Write-Host "Locked - $fullPath"
+                Write-Host "$lockedResult - $fullPath"
             }
         }
 
@@ -872,14 +1034,14 @@ foreach ($regPath in $regPaths) {
                     Take-Permissions $rootKey $regKey
                     try {
                         Remove-Item -Path $fullPath -Force -Recurse -ErrorAction Stop
-                        Write-Host "Deleted - $fullPath"
+                        Write-Host "$deletedResult - $fullPath"
                     }
                     catch {
-                        Write-Host -back 'DarkRed' -fore 'white' "Failed - $fullPath"
+                        Write-Host -back 'DarkRed' -fore 'white' "$failedResult - $fullPath"
                     }
                 }
                 else {
-                    Write-Host "Deleted - $fullPath"
+                    Write-Host "$deletedResult - $fullPath"
                 }
             }
         }
