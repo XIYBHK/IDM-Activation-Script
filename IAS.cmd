@@ -389,6 +389,22 @@ cls
 :MainMenu
 
 cls
+
+:: Set menu text variables before the if block
+set "m1_zh=[1] 激活"
+set "m2_zh=[2] 冻结试用/推荐"
+set "m3_zh=[3] 重置激活/试用"
+set "m4_zh=[4] 下载 IDM"
+set "m5_zh=[5] 帮助"
+set "m0_zh=[0] 退出"
+
+set "m1_en=[1] Activate"
+set "m2_en=[2] Freeze Trial/Recommended"
+set "m3_en=[3] Reset Activation/Trial"
+set "m4_en=[4] Download IDM"
+set "m5_en=[5] Help"
+set "m0_en=[0] Exit"
+
 if %_lang%==1 (
     title  IDM 激活脚本 %iasver%
 ) else (
@@ -405,14 +421,14 @@ if %_lang%==1 (
     echo    Github: https://github.com/XIYBHK
     echo _________________________________________________
     echo:
-    echo    [1] 激活
-    echo    [2] 冻结试用/推荐
-    echo    [3] 重置激活/试用
+    echo    !m1_zh!
+    echo    !m2_zh!
+    echo    !m3_zh!
     echo    ___________________________________________
     echo:
-    echo    [4] 下载 IDM
-    echo    [5] 帮助
-    echo    [0] 退出
+    echo    !m4_zh!
+    echo    !m5_zh!
+    echo    !m0_zh!
     echo _________________________________________________
     echo:
     call :_color2 %_White% "             " %_Green% "请输入选项 [1,2,3,4,5,0]"
@@ -423,14 +439,14 @@ if %_lang%==1 (
     echo    Github: https://github.com/XIYBHK
     echo _________________________________________________
     echo:
-    echo    [1] Activate
-    echo    [2] Freeze Trial/Recommended
-    echo    [3] Reset Activation/Trial
+    echo    !m1_en!
+    echo    !m2_en!
+    echo    !m3_en!
     echo    ___________________________________________
     echo:
-    echo    [4] Download IDM
-    echo    [5] Help
-    echo    [0] Exit
+    echo    !m4_en!
+    echo    !m5_en!
+    echo    !m0_en!
     echo _________________________________________________
     echo:
     call :_color2 %_White% "             " %_Green% "Enter a menu option [1,2,3,4,5,0]"
@@ -466,9 +482,9 @@ for /f %%a in ('%psc% "(Get-Date).ToString('yyyyMMdd-HHmmssfff')"') do set _time
 
 echo:
 if %_lang%==1 (
-    echo 在 %SystemRoot%\Temp 中创建 CLSID 注册表键的备份
+    echo(在 %SystemRoot%\Temp 中创建 CLSID 注册表键的备份
 ) else (
-    echo Creating backup of CLSID registry keys in %SystemRoot%\Temp
+    echo(Creating backup of CLSID registry keys in %SystemRoot%\Temp
 )
 
 reg export %CLSID% "%SystemRoot%\Temp\_Backup_HKCU_CLSID_%_time%.reg"
@@ -494,9 +510,9 @@ goto done
 
 echo:
 if %_lang%==1 (
-    echo 正在删除 IDM 注册表键...
+    echo(正在删除 IDM 注册表键...
 ) else (
-    echo Deleting IDM registry keys...
+    echo(Deleting IDM registry keys...
 )
 echo:
 
@@ -540,9 +556,9 @@ reg delete %reg% /f %nul%
 if "%errorlevel%"=="0" (
 set "reg=%reg:"=%"
 if %_lang%==1 (
-    echo 已删除 - !reg!
+    echo(已删除 - !reg!
 ) else (
-    echo Deleted - !reg!
+    echo(Deleted - !reg!
 )
 ) else (
 set "reg=%reg:"=%"
@@ -572,12 +588,12 @@ echo:
 echo %line%
 echo:
 if %_lang%==1 (
-    echo      激活功能对某些用户可能无效，IDM 可能会显示假序列号警告。
-    echo:
+    echo(     激活功能对某些用户可能无效，IDM 可能会显示假序列号警告。
+    echo(
     call :_color2 %_White% "     " %_Green% "建议使用【冻结试用】选项代替。"
 ) else (
-    echo      Activation is not working for some users and IDM may show fake serial nag screen.
-    echo:
+    echo(     Activation is not working for some users and IDM may show fake serial nag screen.
+    echo(
     call :_color2 %_White% "     " %_Green% "Its recommended to use Freeze Trial option instead."
 )
 echo %line%
@@ -595,10 +611,10 @@ echo:
 if not exist "%IDMan%" (
 if %_lang%==1 (
     call :_color %Red% "未安装 IDM [Internet Download Manager]。"
-    echo 你可以从这里下载  https://www.internetdownloadmanager.com/download.html
+    echo(你可以从这里下载  https://www.internetdownloadmanager.com/download.html
 ) else (
     call :_color %Red% "IDM [Internet Download Manager] is not Installed."
-    echo You can download it from  https://www.internetdownloadmanager.com/download.html
+    echo(You can download it from  https://www.internetdownloadmanager.com/download.html
 )
 goto done
 )
@@ -627,9 +643,9 @@ for /f "tokens=6-7 delims=[]. " %%i in ('ver') do if "%%j"=="" (set fullbuild=%%
 for /f "tokens=2*" %%a in ('reg query "HKU\%_sid%\Software\DownloadManager" /v idmvers %nul6%') do set "IDMver=%%b"
 
 if %_lang%==1 (
-    echo 检查信息 - [%regwinos% ^| %fullbuild% ^| %regarch% ^| IDM: %IDMver%]
+    echo(检查信息 - [%regwinos% ^| %fullbuild% ^| %regarch% ^| IDM: %IDMver%]
 ) else (
-    echo Checking Info - [%regwinos% ^| %fullbuild% ^| %regarch% ^| IDM: %IDMver%]
+    echo(Checking Info - [%regwinos% ^| %fullbuild% ^| %regarch% ^| IDM: %IDMver%]
 )
 
 %idmcheck% && (echo: & taskkill /f /im idman.exe)
@@ -639,9 +655,9 @@ for /f %%a in ('%psc% "(Get-Date).ToString('yyyyMMdd-HHmmssfff')"') do set _time
 
 echo:
 if %_lang%==1 (
-    echo 在 %SystemRoot%\Temp 中创建 CLSID 注册表键的备份
+    echo(在 %SystemRoot%\Temp 中创建 CLSID 注册表键的备份
 ) else (
-    echo Creating backup of CLSID registry keys in %SystemRoot%\Temp
+    echo(Creating backup of CLSID registry keys in %SystemRoot%\Temp
 )
 
 reg export %CLSID% "%SystemRoot%\Temp\_Backup_HKCU_CLSID_%_time%.reg"
@@ -658,13 +674,13 @@ call :download_files
 if not defined _fileexist (
 %eline%
 if %_lang%==1 (
-    echo 错误：无法使用 IDM 下载文件。
-    echo:
-    echo 帮助: %mas%IAS-Help#troubleshoot
+    echo(错误：无法使用 IDM 下载文件。
+    echo(
+    echo(帮助: %mas%IAS-Help#troubleshoot
 ) else (
-    echo Error: Unable to download files with IDM.
-    echo:
-    echo Help: %mas%IAS-Help#troubleshoot
+    echo(Error: Unable to download files with IDM.
+    echo(
+    echo(Help: %mas%IAS-Help#troubleshoot
 )
 goto :done
 )
@@ -728,16 +744,16 @@ if %_unattended%==1 timeout /t 2 & exit /b
 
 if defined terminal (
 if %_lang%==1 (
-    echo 按 0 键退出...
+    echo(按 0 键退出...
 ) else (
-    echo Press 0 key to exit...
+    echo(Press 0 key to exit...
 )
 choice /c 0 /n
 ) else (
 if %_lang%==1 (
-    echo 按任意键退出...
+    echo(按任意键退出...
 ) else (
-    echo Press any key to exit...
+    echo(Press any key to exit...
 )
 pause %nul1%
 )
@@ -755,9 +771,9 @@ exit /b
 
 echo:
 if %_lang%==1 (
-    echo 正在应用注册信息...
+    echo(正在应用注册信息...
 ) else (
-    echo Applying registration details...
+    echo(Applying registration details...
 )
 echo:
 
@@ -784,9 +800,9 @@ exit /b
 
 echo:
 if %_lang%==1 (
-    echo 触发几次下载以创建某些注册表键，请稍候...
+    echo(触发几次下载以创建某些注册表键，请稍候...
 ) else (
-    echo Triggering a few downloads to create certain registry keys, please wait...
+    echo(Triggering a few downloads to create certain registry keys, please wait...
 )
 echo:
 
@@ -826,9 +842,9 @@ goto :Check_file
 
 echo:
 if %_lang%==1 (
-    echo 正在添加注册表键...
+    echo(正在添加注册表键...
 ) else (
-    echo Adding registry key...
+    echo(Adding registry key...
 )
 echo:
 
@@ -841,9 +857,9 @@ reg add %reg% /t REG_DWORD /d "1" /f %nul%
 if "%errorlevel%"=="0" (
 set "reg=%reg:"=%"
 if %_lang%==1 (
-    echo 已添加 - !reg!
+    echo(已添加 - !reg!
 ) else (
-    echo Added - !reg!
+    echo(Added - !reg!
 )
 ) else (
 set "reg=%reg:"=%"
